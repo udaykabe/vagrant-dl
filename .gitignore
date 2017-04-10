@@ -1,0 +1,5 @@
+.vagrant/
+.settings/
+bin/
+.project
+.classpath
