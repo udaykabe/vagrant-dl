@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+
+  streamer:
+    image: landoop/fast-data-dev
+    expose:
+      - 2181
+      - 3030
+      - 8081
+      - 8082
+      - 8083
+      - 9092
+    ports:
+      - 80:3030
+    networks:
+      - nifi
+    #restart: always
+
+networks:
+  nifi:
+    external: true

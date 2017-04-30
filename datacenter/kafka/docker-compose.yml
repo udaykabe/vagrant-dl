@@ -1,0 +1,99 @@
+---
+version: '2'
+
+# Derived from examples on Confluent's github repo
+services:
+
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 22181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: localhost:22888:23888;localhost:32888:33888;localhost:42888:43888
+    network_mode: host
+    #restart: always
+
+  zookeeper-2:
+    extends: zookeeper-1
+    environment:
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_CLIENT_PORT: 32181
+
+  zookeeper-3:
+    extends: zookeeper-1
+    environment:
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_CLIENT_PORT: 42181
+
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    network_mode: host
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092
+
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    network_mode: host
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    network_mode: host
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: localhost:22181,localhost:32181,localhost:42181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:39092
+
+  kafka-create-topics:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka-1
+    network_mode: host
+    # See https://docs.docker.com/compose/startup-order/
+    command: "bash -c 'echo Waiting for Kafka to be ready... && \
+                       cub kafka-ready -b localhost:19092 1 20 && \
+                       kafka-topics --create --topic incoming --if-not-exists --zookeeper localhost:32181 --partitions 4 --replication-factor 3 && \
+                       kafka-topics --create --topic qualified --if-not-exists --zookeeper localhost:32181 --partitions 4 --replication-factor 3 && \
+                       kafka-topics --create --topic nonqualified --if-not-exists --zookeeper localhost:32181 --partitions 4 --replication-factor 3 && \
+                       sleep infinity'"
+    environment:
+      # The following settings are listed here only to satisfy the image's requirements.
+      # Since the image's `command` is overridden above, this container will not start a broker.
+      KAFKA_BROKER_ID: ignored
+      KAFKA_ZOOKEEPER_CONNECT: ignored
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    network_mode: host
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    ports:
+      - '8081'
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: localhost
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: localhost:22181

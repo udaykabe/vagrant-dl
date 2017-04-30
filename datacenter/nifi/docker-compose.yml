@@ -1,0 +1,48 @@
+---
+version: '2'
+
+# Derived from https://github.com/aperepel/docker-nifi/blob/master/nifi-cluster/docker-compose.yml
+services:
+
+  acquisition:
+    image: aperepel/nifi
+    expose:
+      - 8080
+    environment:
+      NIFI_UI_BANNER_TEXT: 'Acquisition Node'
+      NIFI_INSTANCE_ROLE: 'edge'
+    networks:
+      - nifi
+    #restart: always
+
+  ncm:
+    image: aperepel/nifi
+    ports:
+      - 8080:8080
+    environment:
+      NIFI_UI_BANNER_TEXT: 'Cluster Manager'
+      NIFI_INSTANCE_ROLE: 'cluster-manager'
+    networks:
+      - nifi
+    #restart: always
+
+  worker:
+    extends:
+      service: acquisition
+    environment:
+      NIFI_UI_BANNER_TEXT: 'Processing Node'
+      NIFI_INSTANCE_ROLE: 'cluster-node'
+    ports:
+      - 10000
+      - 10001
+      - 10002
+      - 10003
+      - 10004
+    networks:
+      - nifi
+    #restart: always
+
+networks:
+  nifi:
+    external:
+      name: nifi
