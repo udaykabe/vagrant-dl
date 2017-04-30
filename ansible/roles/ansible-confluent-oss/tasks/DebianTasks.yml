@@ -1,0 +1,9 @@
+---
+- name: Import Confluent public key
+  apt_key: url=http://packages.confluent.io/deb/3.2/archive.key state=present
+
+- name: Add Confluent repo
+  apt_repository: repo='deb [arch=amd64] http://packages.confluent.io/deb/3.2 stable main' state=present
+
+- name: Install 'confluent-platform-oss'
+  apt: pkg=confluent-platform-oss-2.11 state=present update_cache=yes

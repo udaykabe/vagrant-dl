@@ -103,24 +103,13 @@ azure_config = machines['azure']
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"  # default box for vm
+  #config.ssh.forward_agent = true
+  config.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
   config.vm.define "devcluster" do |dockerhost|
     dockerhost.vm.hostname = "dockerhost.local"  # set hostname in /etc/hosts
-
-    # Common provisioning  
-    dockerhost.vm.provision :shell, inline: <<-SHELL
-      echo "===== Updating OS ====="
-      apt-get update -y
-      apt-get upgrade -y
-    SHELL
   
     dockerhost.vm.provision :shell, inline: $fix_stdin_is_not_tty_error
-    dockerhost.vm.provision :shell, inline: $install_oracle_jdk8
-    dockerhost.vm.provision :shell, inline: $install_confluent_platform
-    dockerhost.vm.provision :shell, path: "scripts/install_pip.sh"
-    dockerhost.vm.provision :shell, path: "scripts/install_docker.sh"
-    dockerhost.vm.provision :shell, path: "scripts/install_docker_compose_with_pip.sh"
-    dockerhost.vm.provision :shell, path: "scripts/create_docker_networks_and_volumes.sh"
 
     # Virtualbox  
     dockerhost.vm.provider "virtualbox" do |vb, override|
@@ -138,12 +127,17 @@ Vagrant.configure(2) do |config|
       # tell the NAT engine to act as DNS proxy
       # equivalent to VBoxManage modifyvm "VM name" --natdnsproxy1 on
       #vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-  
-      # Add appropriate user to group docker  
-      override.vm.provision :shell, inline: <<-SHELL
-        echo "Exolyte ====> Adding user #{vb_config['user']} to group docker"
-        usermod -aG docker #{vb_config['user']}
-      SHELL
+    
+      override.vm.provision "ansible_local" do |ansible|
+        ansible.install = true
+        ansible.playbook = "ansible/site.yml"
+        ansible.inventory_path = "ansible/inventory"
+        ansible.limit = "all" # or only "nodes" group, etc.
+        #ansible.tmp_path = "/tmp/vagrant-ansible"
+        ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+        #ansible.sudo = true
+        #ansible.verbose = true # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
+      end
 
       # Below for testing only
       # AWS authentication info
@@ -308,12 +302,17 @@ Vagrant.configure(2) do |config|
         region.spot_valid_until = nil # default value nil means indefinitely
         region.terminate_on_shutdown = true if region.spot_max_price.to_f > 0.0
       end
-  
-      # Add appropriate user to group docker  
-      override.vm.provision :shell, inline: <<-SHELL
-        echo "Exolyte ====> Adding user #{aws_config['user']} to group docker"
-        usermod -aG docker #{aws_config['user']}
-      SHELL
+    
+      override.vm.provision "ansible_local" do |ansible|
+        ansible.install = true
+        ansible.playbook = "ansible/site.yml"
+        ansible.inventory_path = "ansible/inventory"
+        ansible.limit = "all" # or only "nodes" group, etc.
+        #ansible.tmp_path = "/tmp/vagrant-ansible"
+        ansible.extra_vars = { ansible_ssh_user: 'ubuntu' }
+        #ansible.sudo = true
+        #ansible.verbose = true # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
+      end
   
       override.vm.provision "shell" do |s|
         s.path = "scripts/install_awscli.sh"

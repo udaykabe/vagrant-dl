@@ -1,0 +1,11 @@
+---
+- name: Install Docker
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - ansible-docker
+    - ansible-python-pip
+    - ansible-docker-compose
+    - ansible-oracle-java8
+    - ansible-confluent-oss

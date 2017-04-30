@@ -1,0 +1,6 @@
+---
+- name: Install python-pip
+  apt: pkg=python-pip state=present
+
+- name: Upgrade python-pip from default version
+  command: 'pip install --upgrade pip'

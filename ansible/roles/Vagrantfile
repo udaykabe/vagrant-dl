@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.ssh.forward_agent = true
+  config.vm.synced_folder Dir.getwd, "/home/vagrant/roles", nfs: true
+
+  # ubuntu 14.04
+  config.vm.define 'ubuntu', primary: true do |c|
+
+    # Virtualbox
+    c.vm.provider "virtualbox" do |vb, override|
+      override.vm.box = "ubuntu/trusty64"
+      override.vm.box_check_update = false
+      override.vm.hostname = "docker.ubuntu.local"
+      override.vm.network "private_network", ip: "192.168.100.3"
+      override.vbguest.auto_update = false
+
+      vb.name = File.basename(Dir.getwd) + "-ubuntu-docker"
+      vb.memory = 2048
+      vb.cpus = 2
+    
+      override.vm.provision "ansible_local" do |ansible|
+        ansible.install = true
+        ansible.playbook = "ansible-docker/tests/test-playbook.yml"
+        ansible.inventory_path = "ansible-docker/tests/inventory"
+        ansible.limit = "all" # or only "nodes" group, etc.
+        #ansible.tmp_path = "/tmp/vagrant-ansible"
+        ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+        #ansible.sudo = true
+        #ansible.verbose = true # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
+      end
+    end
+  end
+
+  # centos 7
+  config.vm.define 'centos7' do |c|
+    c.vm.provider "virtualbox" do |vb, override|
+      override.vm.box = "centos/7"
+      override.vm.box_check_update = false
+      override.vm.hostname = "docker.centos.local"
+      override.vm.network "private_network", ip: "192.168.100.4"
+      #override.vbguest.auto_update = false
+
+      vb.name = File.basename(Dir.getwd) + "-centos-docker"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+
+end

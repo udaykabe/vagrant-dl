@@ -1,0 +1,6 @@
+---
+# if Docker version not specified below, latest version will be installed
+docker_version:
+
+# Use 'daemon' argument for Docker versions >= 1.9, else use '-d' flag
+docker_daemon_opts: "{{ 'daemon' if docker_version == '' or docker_version | version_compare('1.9', '>=') else '-d' }}{{ ' -H fd://' if ansible_os_family == 'RedHat' }}"
