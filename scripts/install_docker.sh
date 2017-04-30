@@ -26,7 +26,7 @@ apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E8
 echo "deb https://apt.dockerproject.org/repo $DISTRO-$CODENAME main" > /etc/apt/sources.list.d/docker.list
 
 # Update package index
-apt-get update -y
+apt-get update
 
 # Purge old repo if it exists
 apt-get purge lxc-docker
@@ -44,9 +44,6 @@ apt-get install -y docker-engine >/dev/null 2>&1
 # Because it does not install the latest version of docker!
 #
 #sudo apt-get -y install docker.io
-
-# Now add vagrant to group 'docker'
-usermod -aG docker $1
 
 # Start docker
 # [[ $CODENAME = "trusty" ]] && service docker start

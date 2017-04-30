@@ -11,6 +11,28 @@ $fix_stdin_is_not_tty_error = <<SCRIPT
   sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
 SCRIPT
 
+#################################################
+#  Install Oracle Java 8 JDK                    #
+#################################################
+$install_oracle_jdk8 = <<SCRIPT
+  add-apt-repository ppa:webupd8team/java
+  apt-get update
+  # Auto accept license
+  echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | /usr/bin/debconf-set-selections
+  apt-get install -y oracle-java8-installer
+SCRIPT
+
+#################################################
+#  Install Open Source Confluent Platform 3.2   #
+#################################################
+$install_confluent_platform = <<SCRIPT
+  wget -qO - http://packages.confluent.io/deb/3.2/archive.key | sudo apt-key add -
+  add-apt-repository "deb [arch=amd64] http://packages.confluent.io/deb/3.2 stable main"
+  apt-get update
+  # http://docs.confluent.io/3.2.0/installation.html#available-packages
+  apt-get install -y confluent-platform-oss-2.11
+SCRIPT
+
 module OS
   def OS.windows?
     (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
@@ -93,7 +115,12 @@ Vagrant.configure(2) do |config|
     SHELL
   
     dockerhost.vm.provision :shell, inline: $fix_stdin_is_not_tty_error
+    dockerhost.vm.provision :shell, inline: $install_oracle_jdk8
+    dockerhost.vm.provision :shell, inline: $install_confluent_platform
     dockerhost.vm.provision :shell, path: "scripts/install_pip.sh"
+    dockerhost.vm.provision :shell, path: "scripts/install_docker.sh"
+    dockerhost.vm.provision :shell, path: "scripts/install_docker_compose_with_pip.sh"
+    dockerhost.vm.provision :shell, path: "scripts/create_docker_networks_and_volumes.sh"
 
     # Virtualbox  
     dockerhost.vm.provider "virtualbox" do |vb, override|
@@ -112,13 +139,11 @@ Vagrant.configure(2) do |config|
       # equivalent to VBoxManage modifyvm "VM name" --natdnsproxy1 on
       #vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
   
-      override.vm.provision "shell" do |s|
-        s.path = "scripts/install_docker.sh"
-        s.args = [vb_config['user']]
-      end
-
-      override.vm.provision :shell, path: "scripts/install_docker_compose_with_pip.sh"
-      override.vm.provision :shell, path: "scripts/create_docker_networks_and_volumes.sh"
+      # Add appropriate user to group docker  
+      override.vm.provision :shell, inline: <<-SHELL
+        echo "Exolyte ====> Adding user #{vb_config['user']} to group docker"
+        usermod -aG docker #{vb_config['user']}
+      SHELL
 
       # Below for testing only
       # AWS authentication info
@@ -196,13 +221,12 @@ Vagrant.configure(2) do |config|
       # Open port(s) -- HTTP, HTTPS, Tomcat, etc.
       azure.tcp_endpoints = '80,443,8080,8181,9090'
   
-      override.vm.provision "shell" do |s|
-        s.path = "scripts/install_docker.sh"
-        s.args = [azure_config['user']]
-      end
-
-      override.vm.provision :shell, path: "scripts/install_docker_compose_with_pip.sh"
-      override.vm.provision :shell, path: "scripts/create_docker_networks_and_volumes.sh"
+  
+      # Add appropriate user to group docker  
+      override.vm.provision :shell, inline: <<-SHELL
+        echo "Exolyte ====> Adding user #{azure_config['user']} to group docker"
+        usermod -aG docker #{azure_config['user']}
+      SHELL
     end
 
     # AWS
@@ -285,13 +309,11 @@ Vagrant.configure(2) do |config|
         region.terminate_on_shutdown = true if region.spot_max_price.to_f > 0.0
       end
   
-      override.vm.provision "shell" do |s|
-        s.path = "scripts/install_docker.sh"
-        s.args = [aws_config['user']]
-      end
-
-      override.vm.provision :shell, path: "scripts/install_docker_compose_with_pip.sh"
-      override.vm.provision :shell, path: "scripts/create_docker_networks_and_volumes.sh"
+      # Add appropriate user to group docker  
+      override.vm.provision :shell, inline: <<-SHELL
+        echo "Exolyte ====> Adding user #{aws_config['user']} to group docker"
+        usermod -aG docker #{aws_config['user']}
+      SHELL
   
       override.vm.provision "shell" do |s|
         s.path = "scripts/install_awscli.sh"
@@ -305,6 +327,6 @@ Vagrant.configure(2) do |config|
         aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id #{aws_config['eip_allocation_id']}
       SCRIPT
     end #config.vm.provider :aws
-  end
+  end #config.mv.define
 
 end
