@@ -26,12 +26,11 @@
   when: code_name.stdout == "trusty"
 
 - name: Add docker repo
-  apt_repository: repo='deb {{ docker_repo }} {{os_distro.stdout}}-{{code_name.stdout}} main' state=present
+  apt_repository: repo='deb {{docker_repo}} {{os_distro.stdout}}-{{code_name.stdout}} main' state=present
 
 - name: Install 'docker-engine'
-  apt: pkg={{ docker_apt_package }} state=present update_cache=yes
+  apt: pkg={{docker_apt_package}} state=present update_cache=yes
 
 - name: Add user to docker group
-  user: name={{ ansible_ssh_user }} groups=docker append=yes
-  become: true
+  user: name={{ansible_ssh_user}} groups=docker append=yes
   register: add_group

@@ -1,4 +1,5 @@
-# Debian:
+# Debian Vars
+
 docker_apt_package: "docker-engine{{ '=' + docker_version if docker_version else '' }}"
 
 docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"

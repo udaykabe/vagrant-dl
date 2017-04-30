@@ -1,7 +1,7 @@
 ---
 version: '2'
 
-# Derived from examples on Confluent's github repo
+# Adapted from examples on Confluent's github repo
 services:
 
   zookeeper-1:

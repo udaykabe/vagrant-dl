@@ -1,5 +1,14 @@
-.vagrant/
-.settings/
-bin/
-.project
+# Eclipse
 .classpath
+.project
+.settings/
+
+# Vagrant
+.vagrant/
+
+# Ansible
+*.retry
+**/group_vars/all/secrets
+
+# Maven
+target/

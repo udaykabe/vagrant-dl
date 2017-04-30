@@ -1,5 +1,5 @@
 ---
-- name: Install Docker
+- name: Setup Docker Host
   hosts: localhost
   connection: local
   become: true
