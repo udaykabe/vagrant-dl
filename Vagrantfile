@@ -11,28 +11,6 @@ $fix_stdin_is_not_tty_error = <<SCRIPT
   sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
 SCRIPT
 
-#################################################
-#  Install Oracle Java 8 JDK                    #
-#################################################
-$install_oracle_jdk8 = <<SCRIPT
-  add-apt-repository ppa:webupd8team/java
-  apt-get update
-  # Auto accept license
-  echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | /usr/bin/debconf-set-selections
-  apt-get install -y oracle-java8-installer
-SCRIPT
-
-#################################################
-#  Install Open Source Confluent Platform 3.2   #
-#################################################
-$install_confluent_platform = <<SCRIPT
-  wget -qO - http://packages.confluent.io/deb/3.2/archive.key | sudo apt-key add -
-  add-apt-repository "deb [arch=amd64] http://packages.confluent.io/deb/3.2 stable main"
-  apt-get update
-  # http://docs.confluent.io/3.2.0/installation.html#available-packages
-  apt-get install -y confluent-platform-oss-2.11
-SCRIPT
-
 module OS
   def OS.windows?
     (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
