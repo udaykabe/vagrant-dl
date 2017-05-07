@@ -1,0 +1,43 @@
+---
+- name: Install AWS CLI
+  pip: name=awscli state=latest
+
+- name: Set home directory for non-root user
+  set_fact:
+    home_dir: /home/{{aws_cli_user}}
+  when: aws_cli_user != "root"
+
+- name: Set home directory for root
+  set_fact:
+    home_dir: /root
+  when: aws_cli_user == "root"
+
+- name: Create the AWS config directory
+  file: >
+    path={{home_dir}}/.aws
+    state=directory
+    owner={{aws_cli_user}}
+    group={{aws_cli_group}}
+    mode=0755
+
+- name: Create AWS CLI 'config' file
+  copy:
+    content: |
+             [default]
+             output = {{aws_output_format}}
+             region = {{aws_region}}
+    dest: "{{home_dir}}/.aws/config"
+    owner: "{{aws_cli_user}}"
+    group: "{{aws_cli_group}}"
+    mode: 0600
+
+- name: Create AWS CLI 'credentials'
+  copy:
+    content: |
+             [default]
+             aws_access_key_id = {{aws_access_key_id}}
+             aws_secret_access_key = {{aws_secret_access_key}}
+    dest: "{{home_dir}}/.aws/credentials"
+    owner: "{{aws_cli_user}}"
+    group: "{{aws_cli_group}}"
+    mode: 0600

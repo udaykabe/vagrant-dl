@@ -1,1 +1,7 @@
+---
 # Add configs that apply to all groups/hosts here
+
+aws_cli_user: '{{ansible_ssh_user}}'
+aws_cli_group: '{{ansible_ssh_user}}'
+aws_output_format: 'json'
+aws_region: 'us-east-1'
