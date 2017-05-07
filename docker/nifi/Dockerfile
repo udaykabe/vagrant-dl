@@ -1,4 +1,6 @@
 FROM openjdk:8-jre-alpine
+
+# Based on the original by Andrew Grande.  See aperepel/nifi
 MAINTAINER Uday Kabe <uday.kabe@exolyte.com>
 
 ARG NIFI_VERSION=1.1.2
