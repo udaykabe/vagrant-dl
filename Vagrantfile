@@ -1,6 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Tested on Vagrant 1.8.7 and Virtualbox 5.0.36 r114008
+Vagrant.require_version ">= 1.8.7"
+
 require 'yaml'
 
 #################################################
@@ -56,7 +59,10 @@ module PROVIDER
   end
 end
 
-# Use standard AWS plugin if not using spot instances
+# Important!!! Be sure to:
+# Manually install vagrant-aws from nabeken for spot instances
+# See this gist: https://gist.github.com/ozzyjohnson/d62b0c8183f0d4d7448e
+# The following will install the standard AWS plugin if you do not use spot instances
 required_plugins = %w(vagrant-winnfsd vagrant-azure vagrant-aws)
 
 required_plugins.each do |plugin|
@@ -82,53 +88,97 @@ azure_config = machines['azure']
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"  # default box for vm
   #config.ssh.forward_agent = true
-  config.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
-
-  config.vm.define "devcluster" do |dockerhost|
-    dockerhost.vm.hostname = "dockerhost.local"  # set hostname in /etc/hosts
+  config.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: [".gitignore", ".project"]
   
-    dockerhost.vm.provision :shell, inline: $fix_stdin_is_not_tty_error
+  config.vm.provision :shell, inline: $fix_stdin_is_not_tty_error
 
-    # Virtualbox  
+  # Virtualbox Pristine - Trusty
+  config.vm.define "trusty", autostart: false do |dockerhost|
+    dockerhost.vm.hostname = "trusty.local"  # set hostname in /etc/hosts
+
     dockerhost.vm.provider "virtualbox" do |vb, override|
+      override.vm.network :private_network, ip: "192.168.33.6"
+      override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
+
+      vb.name = File.basename(Dir.getwd) + "-trusty"
+      vb.memory = vb_config['memory']
+      vb.cpus = vb_config['cpus']
+      vb.linked_clone = true
+    end #configure.vm.provider virtualbox
+  end #configure.vm.define dockerhost-local
+
+  # Virtualbox Pristine - Xenial
+  config.vm.define "xenial", autostart: false do |dockerhost|
+    dockerhost.vm.hostname = "xenial.local"  # set hostname in /etc/hosts
+
+    dockerhost.vm.provider "virtualbox" do |vb, override|
+      override.vm.box = "ubuntu/xenial64"
+      override.ssh.username = "ubuntu" # this is the default for ubuntu/xenial64
+      override.vm.network :private_network, ip: "192.168.33.4"
+      override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
+
+      vb.name = File.basename(Dir.getwd) + "-xenial"
+      vb.memory = vb_config['memory']
+      vb.cpus = vb_config['cpus']
+      vb.linked_clone = true
+    end #configure.vm.provider virtualbox
+  end #configure.vm.define dockerhost-local
+
+  # Virtualbox Custom Config (check message: apt-get update or try with --fix-missing?)
+  config.vm.define "dockerhost", primary: true do |dockerhost|
+    dockerhost.vm.hostname = "dockerhost.local"  # set hostname in /etc/hosts
+
+    dockerhost.vm.provider "virtualbox" do |vb, override|
+      override.vm.box = "ubuntu/xenial64"
+      override.ssh.username = "ubuntu" # this is the default for ubuntu/xenial64
       override.vm.network :private_network, ip: "192.168.33.8"
       override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
-      vb.name = File.basename(Dir.getwd) + "-docker-vm"
+      vb.name = File.basename(Dir.getwd) + "-dockerhost"
       vb.memory = vb_config['memory']
       vb.cpus = vb_config['cpus']
+      vb.linked_clone = true
 
-      # force the VirtualBox NAT engine to intercept DNS requests and forward them to host's resolver
-      # equivalent to VBoxManage modifyvm "VM name" --natdnshostresolver1 on
-      #vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      # Vagrant ansible provisioner creates the following command line to launch ansible-playbook:
+      #   cd /vagrant &&
+      #   PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook
+      #      --limit="all"
+      #      --inventory-file=ansible/inventory
+      #      --extra-vars="{\"ansible_ssh_user\":\"ubuntu\"}"
+      #      -vv ansible/site.yml
 
-      # tell the NAT engine to act as DNS proxy
-      # equivalent to VBoxManage modifyvm "VM name" --natdnsproxy1 on
-      #vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+      # Ansible using /etc/ansible/ansible.cfg as config file
     
       override.vm.provision "ansible_local" do |ansible|
         ansible.install = true
+        ansible.extra_vars = {
+          ansible_vagrant_mode: "ansible_local"
+        }
+        ansible.host_vars = {
+          "dockerhost" => {"ansible_ssh_user" => 'ubuntu'},
+          "trusty" => {"ansible_ssh_user" => 'vagrant',
+                       "ansible_host" => '192.168.33.6'}
+        }
+        ansible.groups = {
+          "virtualbox" => ["dockerhost"],
+          "aws"  => ["dockerhost-aws"],
+          "azure" => ["dockerhost-azure"],
+          "pristine" => ["trusty", "xenial"]
+        }
+        #ansible.inventory_path = "ansible/inventory"  # generated inventory is in tmp_path (see below)
         ansible.playbook = "ansible/site.yml"
-        ansible.inventory_path = "ansible/inventory"
-        ansible.limit = "all" # or only "nodes" group, etc.
-        #ansible.tmp_path = "/tmp/vagrant-ansible"
-        ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+        #ansible.tmp_path = "/path/for/tmp/files"  # Default is /tmp/vagrant-ansible/ on guest
+        ansible.limit = "virtualbox" # or only "nodes" group, etc.
         #ansible.sudo = true
-        #ansible.verbose = true # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
+        ansible.verbose = 'vv' # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
       end
-
-      # Below for testing only
-      # AWS authentication info
-      aws_access_key_id = ENV['AWS_ACCESS_KEY_ID'] || "ABCDEF0123456789ABCD"
-      aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY'] || "abcdef0123456/789ABCD/EF0123456789abcdef"
+    end #configure.vm.provider virtualbox
+  end #configure.vm.define dockerhost-local
   
-      override.vm.provision "shell" do |s|
-        s.path = "scripts/install_awscli.sh"
-        s.args   = ["#{aws_access_key_id}", "#{aws_secret_access_key}"]
-      end
-    end
+  # Azure Docker Host
+  config.vm.define "dockerhost-azure", autostart: false do |dockerhost|
+    dockerhost.vm.hostname = "dockerhost.azure"  # set hostname in /etc/hosts
 
-    # Azure  
     dockerhost.vm.provider :azure do |azure, override|
       #override.vm.boot_timeout=600 # For unreliable internet connections
   
@@ -199,9 +249,14 @@ Vagrant.configure(2) do |config|
         echo "Exolyte ====> Adding user #{azure_config['user']} to group docker"
         usermod -aG docker #{azure_config['user']}
       SHELL
-    end
+    end #configure.vm.provider azure
+  end #configure.vm.define dockerhost-azure
 
-    # AWS
+  # AWS Docker Host
+  config.vm.define "dockerhost-aws", autostart: false do |dockerhost|
+    dockerhost.vm.hostname = "dockerhost-aws.local"  # set hostname in /etc/hosts
+
+    # Important!!!  
     # Manually install vagrant-aws from nabeken for spot instances
     # See this gist: https://gist.github.com/ozzyjohnson/d62b0c8183f0d4d7448e
     dockerhost.vm.provider :aws do |aws, override|
@@ -285,25 +340,24 @@ Vagrant.configure(2) do |config|
         ansible.install = true
         ansible.playbook = "ansible/site.yml"
         ansible.inventory_path = "ansible/inventory"
-        ansible.limit = "all" # or only "nodes" group, etc.
+        ansible.limit = "aws" # or only "nodes" group, etc.
         #ansible.tmp_path = "/tmp/vagrant-ansible"
-        ansible.extra_vars = { ansible_ssh_user: 'ubuntu' }
+        ansible.extra_vars = {
+          ansible_ssh_user: aws_config['user'],
+          ansible_vagrant_mode: "ansible_local"
+        }
         #ansible.sudo = true
-        #ansible.verbose = true # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
-      end
-  
-      override.vm.provision "shell" do |s|
-        s.path = "scripts/install_awscli.sh"
-        s.args = ["#{aws_access_key_id}", "#{aws_secret_access_key}"]
+        ansible.verbose = 'vv' # true or 'vv' or 'vvv' or 'vvvv' or 'vvvvv' increases verbosity
       end
 
       # Assign Elastic IP to instance
-      override.vm.provision :shell, inline: <<-SCRIPT
+      override.vm.provision :shell, privileged: false, name: "Assign EIP", inline: <<-SCRIPT
+        echo "Executing as: `whoami`"
         INSTANCE_ID="`curl -s http://169.254.169.254/latest/meta-data/instance-id`"
-        echo "Assigning IP: #{aws_config['eip']} to instance: $INSTANCE_ID"
+        echo "Assigning EIP: #{aws_config['eip']} to instance: $INSTANCE_ID"
         aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id #{aws_config['eip_allocation_id']}
       SCRIPT
-    end #config.vm.provider :aws
-  end #config.mv.define
+    end #config.vm.provider aws
+  end #config.vm.define dockerhost-aws
 
 end
