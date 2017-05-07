@@ -1,11 +1,11 @@
 ---
 - name: Setup Docker Host
-  hosts: localhost
-  connection: local
+  hosts: virtualbox:aws
   become: true
   roles:
     - ansible-docker
     - ansible-python-pip
+    - ansible-awscli
     - ansible-docker-compose
     - ansible-oracle-java8
     - ansible-confluent-oss
