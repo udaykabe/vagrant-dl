@@ -5,7 +5,7 @@ version: '2'
 services:
 
   acquisition:
-    image: aperepel/nifi
+    image: exolyte/nifi
     expose:
       - 8080
     environment:
@@ -16,7 +16,7 @@ services:
     #restart: always
 
   ncm:
-    image: aperepel/nifi
+    image: exolyte/nifi
     ports:
       - 8080:8080
     environment:
