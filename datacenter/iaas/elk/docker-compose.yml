@@ -1,0 +1,47 @@
+version: "2"
+
+services:
+
+  elasticsearch:
+    image: elasticsearch:2.3.5
+    container_name: elasticsearch
+    command: elasticsearch -Des.network.host=0.0.0.0
+    expose:
+      - "9200/tcp"
+      - "9300/tcp"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - back-tier
+
+  logstash:
+    image: logstash:2.3.4
+    container_name: logstash
+    command: logstash -e 'input { tcp { port => 5000 } } output { elasticsearch { hosts => "elasticsearch:9200" } }'
+    environment:
+      - LS_HEAP_SIZE=1024m
+    expose:
+      - "5000/tcp"
+      - "12201/udp"
+      - "25826/udp"
+    networks:
+      - back-tier
+
+  kibana:
+    image: kibana:4.5.4
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    expose:
+      - "5601/tcp"
+    networks:
+      - back-tier
+
+volumes:
+  esdata:
+    external:
+      name: elasticsearch_data
+
+networks:
+  back-tier:
+    external: true
