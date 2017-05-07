@@ -3,10 +3,9 @@ FROM openjdk:8-jre-alpine
 # Based on the original by Andrew Grande.  See aperepel/nifi
 MAINTAINER Uday Kabe <uday.kabe@exolyte.com>
 
-ARG NIFI_VERSION=1.1.2
+ENV NIFI_VERSION=1.1.2
 
-RUN NIFI_URL=http://www.gtlib.gatech.edu/pub/apache/nifi/$NIFI_VERSION/nifi-$NIFI_VERSION-bin.tar.gz \
-    wget -q $NIFI_URL && \
+RUN wget -q http://www.gtlib.gatech.edu/pub/apache/nifi/$NIFI_VERSION/nifi-$NIFI_VERSION-bin.tar.gz && \
     tar zxf nifi*.tar.gz && \
     rm -f nifi*.tar.gz
 
