@@ -1,36 +1,49 @@
 ---
+- name: Update package list
+  apt: update_cache=yes
+
+- name: Upgrade installed packages on this server
+  apt: upgrade=dist # set to full if you want a dist-upgrade
+
+- name: Check if a reboot is required
+  stat: path=/var/run/reboot-required get_md5=no
+  register: file
+
+# The following two tasks have not been completely vetted
+- name: Reboot the server
+  become: true
+  shell: sleep 2 && /sbin/shutdown -r now "All packages upgraded"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: file.stat.exists == true and ansible_vagrant_mode is defined and ansible_vagrant_mode != "ansible_local"
+
+- name: Wait for server to come back
+  local_action: wait_for
+  args:
+    host: "{{inventory_hostname}}"
+    port: 22
+    state: started
+    delay: 30
+    timeout: 300
+  when: file.stat.exists == true and ansible_vagrant_mode is defined and ansible_vagrant_mode != "ansible_local"
+
+- name: Install https apt transport package
+  apt: pkg=apt-transport-https state=latest update_cache=yes
+  when: ansible_lsb.codename == "xenial"
+
+- name: Install 'linux-image-extra' package if we're on Ubuntu trusty
+  apt: pkg=linux-image-extra-{{ansible_kernel}} state=present
+  when: ansible_lsb.codename == "trusty"
+
 - name: Import Docker GPG key
   apt_key: id={{docker_repo_key}} keyserver=p80.pool.sks-keyservers.net state=present
 
-- name: Install https apt transport package
-  apt: pkg=apt-transport-https state=present update_cache=yes
-
-- name: Determine OS short code name
-  command: 'lsb_release -cs'
-  register: code_name
-
-- name: Determine OS distribution name
-  shell: "lsb_release -is | tr '[:upper:]' '[:lower:]'"
-  register: os_distro
-
-- debug:
-    msg: "Repo qualifier is: {{os_distro.stdout}}-{{code_name.stdout}}"
-    verbosity: 2 # when verbose option is vv
-
-- name: Determine OS kernel release
-  command: 'uname -r'
-  register: kernel_release
-
-- name: Install 'linux-image-extra' package if Ubuntu trusty
-  apt: pkg=linux-image-extra-{{kernel_release.stdout}} state=present
-  when: code_name.stdout == "trusty"
-
 - name: Add docker repo
-  apt_repository: repo='deb {{docker_repo}} {{os_distro.stdout}}-{{code_name.stdout}} main' state=present
+  apt_repository: repo='deb {{docker_repo}} {{ansible_lsb.id|lower}}-{{ansible_lsb.codename}} main' state=present
 
 - name: Install 'docker-engine'
   apt: pkg={{docker_apt_package}} state=present update_cache=yes
 
 - name: Add user to docker group
   user: name={{ansible_ssh_user}} groups=docker append=yes
-  register: add_group
