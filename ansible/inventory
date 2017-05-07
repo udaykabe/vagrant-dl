@@ -1,2 +1,20 @@
+dockerhost ansible_connection=local ansible_ssh_user=ubuntu
+
+xenial
+trusty ansible_ssh_user=vagrant
+
+dockerhost-aws ansible_connection=local
+dockerhost-azure ansible_connection=local
+
 [virtualbox]
-localhost
+dockerhost
+
+[aws]
+dockerhost-aws
+
+[azure]
+dockerhost-azure
+
+[pristine]
+xenial
+trusty
