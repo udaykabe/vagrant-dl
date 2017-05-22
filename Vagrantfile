@@ -98,7 +98,7 @@ Vagrant.configure(2) do |config|
 
     dockerhost.vm.provider "virtualbox" do |vb, override|
       override.vm.network :private_network, ip: "192.168.33.6"
-      override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
+      #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
       vb.name = File.basename(Dir.getwd) + "-trusty"
       vb.memory = vb_config['memory']
@@ -115,7 +115,7 @@ Vagrant.configure(2) do |config|
       override.vm.box = "ubuntu/xenial64"
       override.ssh.username = "ubuntu" # this is the default for ubuntu/xenial64
       override.vm.network :private_network, ip: "192.168.33.4"
-      override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
+      #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
       vb.name = File.basename(Dir.getwd) + "-xenial"
       vb.memory = vb_config['memory']
@@ -132,7 +132,7 @@ Vagrant.configure(2) do |config|
       override.vm.box = "ubuntu/xenial64"
       override.ssh.username = "ubuntu" # this is the default for ubuntu/xenial64
       override.vm.network :private_network, ip: "192.168.33.8"
-      override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
+      #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
       vb.name = File.basename(Dir.getwd) + "-dockerhost"
       vb.memory = vb_config['memory']
