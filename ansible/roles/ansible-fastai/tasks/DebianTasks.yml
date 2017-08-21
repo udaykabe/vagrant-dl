@@ -1,5 +1,4 @@
 ---
----
 - name: Update package list
   apt: update_cache=yes
 
