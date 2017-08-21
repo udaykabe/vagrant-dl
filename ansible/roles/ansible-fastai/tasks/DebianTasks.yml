@@ -1,1 +1,204 @@
 ---
+---
+- name: Update package list
+  apt: update_cache=yes
+
+- name: Upgrade installed packages on this server
+  apt: upgrade=dist # set to full if you want a dist-upgrade
+
+- name: Check if a reboot is required
+  stat: path=/var/run/reboot-required get_md5=no
+  register: file
+
+# The following two tasks have not been completely vetted
+- name: Reboot the server
+  become: true
+  shell: sleep 2 && /sbin/shutdown -r now "All packages upgraded"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: file.stat.exists == true and ansible_vagrant_mode is defined and ansible_vagrant_mode != "ansible_local"
+
+- name: Wait for server to come back
+  local_action: wait_for
+  args:
+    host: "{{inventory_hostname}}"
+    port: 22
+    state: started
+    delay: 30
+    timeout: 300
+  when: file.stat.exists == true and ansible_vagrant_mode is defined and ansible_vagrant_mode != "ansible_local"
+
+- name: Install list of packages
+  apt: name={{item}} state=installed
+  with_items:
+       - tmux
+       - build-essential
+       - gcc
+       - g++
+       - make
+       - binutils
+       - software-properties-common
+
+- name: Create the downloads directory
+  file: >
+    path={{home_dir}}/downloads
+    state=directory
+    owner={{aws_cli_user}}
+    group={{aws_cli_group}}
+    mode=0755
+
+# download and install GPU drivers
+- name: "Download GPU Drivers"
+  get_url: 
+    url=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+    dest={{home_dir}}/downloads
+    owner={{aws_cli_user}}
+    group={{aws_cli_group}}
+    mode=0764
+
+- name: "Install GPU Driver Package"
+  shell: dpkg -i {{home_dir}}/downloads/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+
+- name: "Update cache again"
+  apt: update_cache=yes
+
+- name: "Install GPU Drivers"
+  apt: name=cuda state=installed
+
+# If you get an error like "could not insert 'nvidia_367': No such device" for the following command, restart the VM using command : sudo shutdown -r now
+- name: Check Installation
+  shell: modprobe nvidia
+  ignore_errors: yes
+  register: command_result
+
+- debug:
+    var: command_result.stderr
+
+# Install Anaconda for current user
+- debug:
+    msg: "Ansible PATH: {{ansible_env.PATH}}"
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+- name: check for installation of Anaconda
+  stat:
+    path: '{{anaconda_conda_bin}}'
+  changed_when: false
+  register: anaconda_conda_binary
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+- name: Install Anaconda as necessary
+  block:
+    - name: download installer...
+      get_url:
+        url: '{{anaconda_installer_url}}'
+        dest: '{{home_dir}}/downloads/{{anaconda_installer_sh}}'
+        timeout: '{{anaconda_timeout_seconds}}'
+        checksum: '{{anaconda_checksum}}'
+        mode: 0755
+    - name: install...
+      command: '{{home_dir}}/downloads/{{anaconda_installer_sh}} -b -p {{anaconda_install_dir}}'
+      args:
+        creates: '{{anaconda_install_dir}}'
+    - name: link anaconda...
+      file:
+        src: '{{anaconda_install_dir}}'
+        dest: '{{anaconda_link_dir}}'
+        state: link
+    - name: delete installer...
+      file:
+        path: '{{home_dir}}/downloads/{{anaconda_installer_sh}}'
+        state: absent
+    - name: Update PATH to use Anaconda2 binaries
+      shell: echo "export PATH=\"{{anaconda_link_dir}}/bin:\$PATH\"" >> ~/.bashrc
+    - name: remove conda-curl since it conflicts with the system curl
+      command: '{{anaconda_conda_bin}} remove -y curl'
+      args:
+        removes: '{{anaconda_link_dir}}/lib/libcurl.a'
+  when: not anaconda_conda_binary.stat.exists
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+# Inatall pip
+- name: Install python-pip
+  apt: pkg=python-pip state=latest
+
+# Install and configure theano for the current user
+- name: Install 'theano'
+  command: 'pip install theano'
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+- name: Create theano config file
+  copy:
+    content: |
+             [global]
+             device = gpu
+             floatx = float32
+             
+             [cuda]
+             root = /usr/local/cuda
+    dest: "{{home_dir}}/.theanorc"
+    owner: "{{aws_cli_user}}"
+    group: "{{aws_cli_group}}"
+    mode: 0644
+
+# Install and configure keras for the current user
+- name: Install 'keras'
+  command: 'pip install keras'
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+- name: Create .keras directory
+  file: >
+    path={{home_dir}}/.keras
+    state=directory
+    owner={{aws_cli_user}}
+    group={{aws_cli_group}}
+    mode=0755
+  become: true
+  become_user: "{{aws_cli_user}}"
+
+- name: Create keras config file
+  copy:
+    content: |
+             {
+             "image_dim_ordering": "th",
+             "epsilon": 1e-07,
+             "floatx": "float32",
+             "backend": "theano"
+             }
+    dest: "{{home_dir}}/.keras/keras.json"
+    owner: "{{aws_cli_user}}"
+    group: "{{aws_cli_group}}"
+    mode: 0644
+
+# Install cudnn libraries
+- name: "Download cudnn libraries"
+  get_url: 
+    url=http://platform.ai/files/cudnn.tgz
+    dest={{home_dir}}/downloads
+    owner={{aws_cli_user}}
+    group={{aws_cli_group}}
+    mode=0764
+  become: true
+  become_user: "{{aws_cli_user}}"
+  check_mode: yes
+
+- name: Extract archive
+  unarchive:
+    src: "{{home_dir}}/downloads/cudnn.tgz"
+    dest: "{{home_dir}}/downloads"
+  check_mode: yes
+
+- name: Copy cudnn libraries
+  shell: 'cd {{home_dir}}/downloads/cuda && cp lib64/* /usr/local/cuda/lib64/ && cp include/* /usr/local/cuda/include/'
+  check_mode: yes
+
+# Clone the fast.ai git repo
+- name: Clone fast.ai repo
+  git: repo=https://github.com/fastai/courses.git version=master dest=git
+  become: true
+  become_user: "{{aws_cli_user}}"
