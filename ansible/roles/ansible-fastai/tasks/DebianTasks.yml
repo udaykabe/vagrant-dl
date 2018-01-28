@@ -116,6 +116,11 @@
       command: '{{anaconda_conda_bin}} remove -y curl'
       args:
         removes: '{{anaconda_link_dir}}/lib/libcurl.a'
+    - name: Install bcolz and update all
+      shell: |
+        conda install -y bcolz
+        conda upgrade -y --all
+      ignore_errors: yes
   when: not anaconda_conda_binary.stat.exists
   become: true
   become_user: "{{aws_cli_user}}"

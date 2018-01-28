@@ -1,0 +1,49 @@
+version: "2"
+
+services:
+
+  mysql:
+    image: mysql/mysql-server:5.7
+    environment:
+      MYSQL_DATABASE: exo
+      MYSQL_USER: exo
+      MYSQL_PASSWORD: changeme
+      MYSQL_ROOT_PASSWORD: changeme
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - back-tier
+    restart: on-failure:5
+
+  social:
+    image: teknologist/ubuntu-jdk7-exo-mysql
+    depends_on:
+      - mysql
+    expose:
+      - "8080"
+    environment:
+      - MYSQL_DATABASE=exo
+      - MYSQL_USER=exo
+      - MYSQL_PASSWORD=changeme
+
+      - VIRTUAL_HOST=social.example.com
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=8080
+
+      - LETSENCRYPT_HOST=social.example.com
+      - LETSENCRYPT_EMAIL=first.last@example.com
+    volumes:
+      - exodata:/srv/exo
+    networks:
+      - back-tier
+    restart: on-failure:5
+
+networks:
+  back-tier:
+    external: true
+
+volumes:
+  mysqldata:
+    driver: local
+  exodata:
+    driver: local

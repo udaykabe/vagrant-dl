@@ -1,0 +1,25 @@
+version: "2"
+
+services:
+
+  ghost:
+    image: ptimof/ghost
+    container_name: ghost
+    volumes:
+      - ../../volumes/data/ghost:/var/lib/ghost
+    environment:
+      - VIRTUAL_HOST=blog.example.com
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=2368
+
+      - LETSENCRYPT_HOST=blog.example.com
+      - LETSENCRYPT_EMAIL=first.last@example.com
+
+      - GHOST_URL=http://blog.example.com
+    command: npm start --production
+    networks:
+      - back-tier
+
+networks:
+  back-tier:
+    external: true
