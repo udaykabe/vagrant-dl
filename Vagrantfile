@@ -129,8 +129,8 @@ Vagrant.configure(2) do |config|
     dockerhost.vm.hostname = "dockerhost.local"  # set hostname in /etc/hosts
 
     dockerhost.vm.provider "virtualbox" do |vb, override|
-      override.vm.box = "ubuntu/xenial64"
-      override.ssh.username = "ubuntu" # this is the default for ubuntu/xenial64
+      override.vm.box = "bento/ubuntu-16.04"
+      override.ssh.username = "vagrant" # this is the default for ubuntu/xenial64
       override.vm.network :private_network, ip: "192.168.33.8"
       #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
@@ -155,7 +155,7 @@ Vagrant.configure(2) do |config|
           ansible_vagrant_mode: "ansible_local"
         }
         ansible.host_vars = {
-          "dockerhost" => {"ansible_ssh_user" => 'ubuntu'},
+          "dockerhost" => {"ansible_ssh_user" => 'vagrant'},
           "trusty" => {"ansible_ssh_user" => 'vagrant',
                        "ansible_host" => '192.168.33.6'}
         }
