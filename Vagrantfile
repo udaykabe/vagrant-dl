@@ -254,7 +254,7 @@ Vagrant.configure(2) do |config|
 
   # AWS Docker Host
   config.vm.define "dockerhost-aws", autostart: false do |dockerhost|
-    dockerhost.vm.hostname = "dockerhost-aws.local"  # set hostname in /etc/hosts
+    dockerhost.vm.hostname = "dockerhost-aws.local"  # not set in /etc/hosts on AWS
 
     # Important!!!  
     # Manually install vagrant-aws from nabeken for spot instances
