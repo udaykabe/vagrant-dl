@@ -18,3 +18,15 @@ dockerhost-azure
 [pristine]
 xenial
 trusty
+
+[vb-dockernode]
+dockerhost
+
+[aws-dockernode]
+dockerhost-aws
+
+[aws-ai]
+dockerhost-aws
+
+[vb-ai]
+dockerhost
