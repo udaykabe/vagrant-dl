@@ -21,7 +21,12 @@ RUN addgroup wso2 && \
     adduser --system --shell /bin/bash --gecos 'WSO2User' --ingroup wso2 --disabled-login wso2user && \
     chown -R wso2user:wso2 $WSO2_HOME
 
-EXPOSE 8000 9763 9443 10500
+# 8000 - Kerberos Key Distribution Center server
+# 9443 - HTTPS transport for management console
+# 9763 - HTTP transport for management console
+# 10389 - Embedded LDAP server
+# 10500 - Thrift Entitlement Receive Port
+EXPOSE 8000 9763 9443 10389 10500
 
 USER wso2user
 
