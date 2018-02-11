@@ -268,19 +268,29 @@ Vagrant.configure(2) do |config|
   
       # t1.micro,   1vcpu, variable ECU, .615GiB, EBS Only, $0.02/hour, $0.0041/hour
       # t2.micro,   1vcpu, variable ECU, 1GiB, EBS Only, $0.012/hour
+
+      ### Large ###
       # t2.large,   2vcpu, variable ECU, 8GiB, EBS Only, $0.094/hour
+      # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.100/hour, $0.0268/hour
+      # m5.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.096/hour, $0.0163/hour
+      # r3.large,   2vcpu, 6.5 ECU, 15GiB, 1 x 32 SSD, $0.166/hour, $0.0206/hour   -- dc/os bootstrap and agent 60GB needed
+      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0186/hour
+
+      ### xLarge ###
       # t2.xlarge,  4vcpu, variable ECU, 16GiB, EBS Only, $0.188/hour
+      # m4.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.200/hour, $0.0664/hour
+      # m5.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.192/hour, $0.0326/hour
+      # p2.xlarge,  4vcpu, 12 ECU, 61GiB, EBS Only, $0.9/hour, $0.2915/hour -- machine learning
+      # r3.xlarge,  4vcpu, 13 ECU, 30.5GiB, 1 x 80 SSD, $0.333/hour, $0.0354/hour -- mesos master 120GB SSD recommended
+      # r4.xlarge,  4vcpu, 13.5 ECU, 30.5GiB, EBS Only, $0.266/hour, $0.0372/hour
+
+      ### 2xLarge ###
       # t2.2xlarge, 8vcpu, variable ECU, 32GiB, EBS Only, $0.376/hour
-      # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.108/hour, $0.0268/hour
-      # m4.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.215/hour, $0.0664/hour
-      # m4.2xlarge, 8vcpu, 26 ECU, 32GiB, EBS Only, $0.431/hour, $0.0718/hour
-      # p2.xlarge,  4vcpu, 12 ECU, 61GiB, EBS Only, $0.9/hour, $0.1343/hour -- machine learning
-      # p2.8xlarge, 32vcpu, 94 ECU, 488GiB, EBS Only, $7.20/hour, $0.879/hour
-      # r3.large,   2vcpu, 6.5 ECU, 15GiB, 1 x 32 SSD, $0.166/hour, $0.0316/hour   -- bootstrap and agent 60GB needed
-      # r3.xlarge,  4vcpu,  13 ECU, 30.5GiB, 1 x 80 SSD, $0.333/hour, $0.0458/hour -- master 120GB SSD recommended
-      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0152/hour
-      # r4.xlarge,  4vcpu,  13.5 ECU, 30.5GiB, EBS Only, $0.266/hour, $0.0318/hour
-      # r4.2xlarge, 8vcpu,  27 ECU, 61GiB, EBS Only, $0.532/hour, $0.0634/hour
+      # m4.2xlarge, 8vcpu, 26 ECU, 32GiB, EBS Only, $0.400/hour, $0.0718/hour
+      # m5.2xlarge, 8vcpu, 26 ECU, 32GiB, EBS Only, $0.384/hour, $0.0653/hour
+      # r4.2xlarge, 8vcpu, 27 ECU, 61GiB, EBS Only, $0.532/hour, $0.0744/hour
+
+      # p2.8xlarge, 32vcpu, 94 ECU, 488GiB, EBS Only, $7.20/hour, $2.16/hour
       aws.instance_type = "t2.micro"
       
       # AWS authentication info
@@ -322,7 +332,7 @@ Vagrant.configure(2) do |config|
         region.instance_type = aws_config['instance_type']
         region.associate_public_ip = true
         region.elastic_ip = false # || 'true' creates a new Elastic IP address each time
-        # block_device_mapping is ignored by aws for spot instances
+        # block_device_mapping is ignored. Vagrant issue? or AWS issue? or vagrant-aws spot plugin issue?
         region.block_device_mapping = [{
           'DeviceName' => '/dev/sda1',
           'Ebs.VolumeSize' => aws_config['volume_size'],
@@ -356,6 +366,12 @@ Vagrant.configure(2) do |config|
         INSTANCE_ID="`curl -s http://169.254.169.254/latest/meta-data/instance-id`"
         echo "Assigning EIP: #{aws_config['eip']} to instance: $INSTANCE_ID"
         aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id #{aws_config['eip_allocation_id']}
+        VOLUME_ID="`aws ec2 describe-volumes --region #{aws_config['region']} --query \"Volumes[?Attachments[?InstanceId == '$INSTANCE_ID']].VolumeId\" --output text`"
+        echo "Instance ID: $INSTANCE_ID, Volume ID: $VOLUME_ID"
+        echo "Resizing /dev/sda1"
+        aws ec2 modify-volume --volume-id $VOLUME_ID --size #{aws_config['volume_size']} --region #{aws_config['region']}
+        echo "Rebooting..."
+        sudo reboot
       SCRIPT
     end #config.vm.provider aws
   end #config.vm.define dockerhost-aws
