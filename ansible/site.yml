@@ -3,25 +3,10 @@
   hosts: virtualbox:aws
   become: true
   roles:
+    - ansible-python-pip
+    - ansible-awscli
     - ansible-docker
     - ansible-docker-compose
-    - ansible-awscli
-    - ansible-python-pip
     - ansible-oracle-java8
     - ansible-confluent-oss
-
-- name: Setup Dockerization Only
-  hosts: vb-dockernode:aws-dockernode
-  become: true
-  roles:
-    - ansible-docker
-    - ansible-docker-compose
-    - ansible-awscli
-
-- name: Setup Deep Learning AI Platform
-  hosts: aws-ai:vb-ai
-  become: true
-  roles:
-    - ansible-awscli
-    - ansible-fastai
 
