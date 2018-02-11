@@ -332,7 +332,7 @@ Vagrant.configure(2) do |config|
         region.instance_type = aws_config['instance_type']
         region.associate_public_ip = true
         region.elastic_ip = false # || 'true' creates a new Elastic IP address each time
-        # block_device_mapping is ignored. Vagrant issue? or AWS issue? or vagrant-aws spot plugin issue?
+        # block_device_mapping settings do not work. AWS issue? or vagrant-aws spot plugin issue?
         region.block_device_mapping = [{
           'DeviceName' => '/dev/sda1',
           'Ebs.VolumeSize' => aws_config['volume_size'],
@@ -361,11 +361,12 @@ Vagrant.configure(2) do |config|
       end
 
       # Assign Elastic IP to instance
-      override.vm.provision :shell, privileged: false, name: "Assign EIP", inline: <<-SCRIPT
+      override.vm.provision :shell, privileged: false, name: "Assign EIP; Resize root volume", inline: <<-SCRIPT
         echo "Executing as: `whoami`"
         INSTANCE_ID="`curl -s http://169.254.169.254/latest/meta-data/instance-id`"
         echo "Assigning EIP: #{aws_config['eip']} to instance: $INSTANCE_ID"
         aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id #{aws_config['eip_allocation_id']}
+        # Resize root volume
         VOLUME_ID="`aws ec2 describe-volumes --region #{aws_config['region']} --query \"Volumes[?Attachments[?InstanceId == '$INSTANCE_ID']].VolumeId\" --output text`"
         echo "Instance ID: $INSTANCE_ID, Volume ID: $VOLUME_ID"
         echo "Resizing /dev/sda1"
