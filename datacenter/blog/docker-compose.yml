@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 
 services:
 
@@ -6,20 +6,29 @@ services:
     image: ptimof/ghost
     container_name: ghost
     volumes:
-      - ../../volumes/data/ghost:/var/lib/ghost
+      - webcontent:/var/lib/ghost
     environment:
-      - VIRTUAL_HOST=blog.example.com
+      - VIRTUAL_HOST=${BLOG_HOST:-blog.example.com}
       - VIRTUAL_NETWORK=back-tier
       - VIRTUAL_PORT=2368
 
-      - LETSENCRYPT_HOST=blog.example.com
-      - LETSENCRYPT_EMAIL=first.last@example.com
+      - LETSENCRYPT_HOST=${BLOG_HOST:-blog.example.com}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
 
-      - GHOST_URL=http://blog.example.com
+      - GHOST_URL=http://${BLOG_HOST:-blog.example.com}
     command: npm start --production
     networks:
       - back-tier
+    # if testing in a local vm
+    #ports:
+    #  - 2368:2368
 
 networks:
   back-tier:
     external: true
+
+# External volumes
+volumes:
+  webcontent:
+    external:
+      name: docroot
