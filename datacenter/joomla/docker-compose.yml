@@ -1,0 +1,42 @@
+version: '3.1'
+
+services:
+  joomla:
+    image: joomla
+    links:
+      - joomladb:mysql
+    # if running on a local vm
+    #ports:
+    #  - 80:80
+    environment:
+      - JOOMLA_DB_HOST=joomladb
+      - JOOMLA_DB_PASSWORD=${JOOMLA_DB_PASSWORD:-example}
+
+      - VIRTUAL_HOST=${JOOMLA_HOST:-joomla.example.com}
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=80
+
+      - LETSENCRYPT_HOST=${JOOMLA_HOST:-joomla.example.com}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
+    networks:
+      - back-tier
+    restart: always
+
+  joomladb:
+    image: mysql/mysql-server:5.76
+    volumes:
+      - joomla_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+    networks:
+      - back-tier
+    restart: always
+
+networks:
+  back-tier:
+    external: true
+
+volumes:
+  joomla_db:
+    driver: local
+      

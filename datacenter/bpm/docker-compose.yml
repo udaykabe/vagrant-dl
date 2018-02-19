@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+
+  activiti:
+    image: exolyte/activiti
+    container_name: activiti
+    volumes:
+      # the following is not possible in compose
+      #- $(which docker):/bin/docker
+      - /usr/bin/docker:/bin/docker
+      - /var/run/docker.sock:/run/docker.sock
+    environment:
+      - TOMCAT_ADMIN_USER=admin
+      - TOMCAT_ADMIN_PASSWORD=${TOMCAT_ADMIN_PASSWORD:-admin}
+      - DB_TYPE=${DB_TYPE:-mysql}
+      - DB_HOST=${DB_HOST:-mysql-activiti}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_NAME=${DB_NAME:-activiti}
+      - DB_USER=${DB_USER:-bpm}
+      - DB_PASS=${MYSQL_PASSWORD:-changeme}
+
+      - VIRTUAL_HOST=${BPM_HOST:-bpm.example.com}
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=8080
+
+      - LETSENCRYPT_HOST=${BPM_HOST:-bpm.example.com}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
+    networks:
+      - back-tier
+    depends_on:
+      - mysql-activiti
+    # if running on a local vm
+    #ports:
+    #  - 8080:8080
+
+  mysql-activiti:
+    image: mysql/mysql-server:5.7
+    environment:
+      - MYSQL_DATABASE=activiti
+      - MYSQL_USER=bpm
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-changeme}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+    volumes:
+      - bpm_db:/var/lib/mysql
+    networks:
+      - back-tier
+    restart: on-failure:5
+
+networks:
+  back-tier:
+    external: true
+
+volumes:
+  bpm_db:
+    driver: local
