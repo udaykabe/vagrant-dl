@@ -1,16 +1,16 @@
-version: "2"
+version: "3"
 
 services:
 
   mysql:
     image: mysql/mysql-server:5.7
     environment:
-      MYSQL_DATABASE: exo
-      MYSQL_USER: exo
-      MYSQL_PASSWORD: changeme
-      MYSQL_ROOT_PASSWORD: changeme
+      - MYSQL_DATABASE=exo
+      - MYSQL_USER=exo
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-changeme}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
     volumes:
-      - mysqldata:/var/lib/mysql
+      - social_db:/var/lib/mysql
     networks:
       - back-tier
     restart: on-failure:5
@@ -26,12 +26,12 @@ services:
       - MYSQL_USER=exo
       - MYSQL_PASSWORD=changeme
 
-      - VIRTUAL_HOST=social.example.com
+      - VIRTUAL_HOST=${SOCIAL_HOST:-social.example.com}
       - VIRTUAL_NETWORK=back-tier
       - VIRTUAL_PORT=8080
 
-      - LETSENCRYPT_HOST=social.example.com
-      - LETSENCRYPT_EMAIL=first.last@example.com
+      - LETSENCRYPT_HOST=${SOCIAL_HOST:-social.example.com}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
     volumes:
       - exodata:/srv/exo
     networks:
@@ -43,7 +43,7 @@ networks:
     external: true
 
 volumes:
-  mysqldata:
+  social_db:
     driver: local
   exodata:
     driver: local
