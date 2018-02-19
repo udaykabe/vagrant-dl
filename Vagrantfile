@@ -274,7 +274,7 @@ Vagrant.configure(2) do |config|
       # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.100/hour, $0.0268/hour
       # m5.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.096/hour, $0.0163/hour
       # r3.large,   2vcpu, 6.5 ECU, 15GiB, 1 x 32 SSD, $0.166/hour, $0.0206/hour   -- dc/os bootstrap and agent 60GB needed
-      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0186/hour
+      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0186/hour, $0.048/hr - $0.076/hr actual
 
       ### xLarge ###
       # t2.xlarge,  4vcpu, variable ECU, 16GiB, EBS Only, $0.188/hour
