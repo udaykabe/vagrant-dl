@@ -10,7 +10,7 @@ services:
     #  - 80:80
     environment:
       - JOOMLA_DB_HOST=joomladb
-      - JOOMLA_DB_NAME=${JOOMLA_DB_NAME;-joomla} # this is the default
+      - JOOMLA_DB_NAME=${JOOMLA_DB_NAME:-joomla} # this is the default
       - JOOMLA_DB_USER=${JOOMLA_DB_USER:-root} # this is the default
       - JOOMLA_DB_PASSWORD=${JOOMLA_DB_PASSWORD:-changeme}
 
