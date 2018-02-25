@@ -1,0 +1,23 @@
+# visit https://github.com/portainer/portainer-compose/blob/master/docker-compose.yml and
+# https://autoize.com/portainer-with-nginx-reverse-proxy/
+version: "3"
+
+services:
+
+  portainer:
+    image: portainer/portainer:latest
+    container_name: portainer-app
+    # uncomment the following to automatically choose 'Manage the Docker instance where Portainer is running'
+    #command: --host=unix:///var/run/docker.sock
+    networks:
+      - back-tier
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+
+networks:
+  back-tier:
+    external: true
+    
