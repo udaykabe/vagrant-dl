@@ -5,20 +5,20 @@ services:
   activiti:
     image: exolyte/activiti
     container_name: activiti
+    expose:
+      - "8080"
     volumes:
-      # the following is not possible in compose
-      #- $(which docker):/bin/docker
       - /usr/bin/docker:/bin/docker
       - /var/run/docker.sock:/run/docker.sock
     environment:
       - TOMCAT_ADMIN_USER=admin
       - TOMCAT_ADMIN_PASSWORD=${TOMCAT_ADMIN_PASSWORD:-admin}
-      - DB_TYPE=${DB_TYPE:-mysql}
-      - DB_HOST=${DB_HOST:-mysql-activiti}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_NAME=${DB_NAME:-activiti}
-      - DB_USER=${DB_USER:-bpm}
-      - DB_PASS=${MYSQL_PASSWORD:-changeme}
+      - DB_TYPE=${BPM_DB_TYPE:-mysql}
+      - DB_HOST=${BPM_DB_HOST:-mysql-activiti}
+      - DB_PORT=${BPM_DB_PORT:-3306}
+      - DB_NAME=${BPM_DB_NAME:-activiti}
+      - DB_USER=${BPM_DB_USER:-bpm}
+      - DB_PASS=${BPM_DB_PASS:-changeme}
 
       - VIRTUAL_HOST=${BPM_HOST:-bpm.example.com}
       - VIRTUAL_NETWORK=back-tier
@@ -35,14 +35,14 @@ services:
     #  - 8080:8080
 
   mysql-activiti:
-    image: mysql/mysql-server:5.7
-    environment:
-      - MYSQL_DATABASE=activiti
-      - MYSQL_USER=bpm
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-changeme}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+    image: mysql:5.7
     volumes:
       - bpm_db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+      - MYSQL_DATABASE=${BPM_DB_NAME:-activiti}
+      - MYSQL_USER=${BPM_DB_USER:-bpm}
+      - MYSQL_PASSWORD=${BPM_DB_PASS:-changeme}
     networks:
       - back-tier
     restart: on-failure:5
