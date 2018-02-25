@@ -69,7 +69,7 @@ Visit [Diff Between PEM and key files](https://serverfault.com/questions/9708/wh
 If you are having trouble, ssh'ing into your AWS instance:
 
 	Check AWS Security Group ingress rules for allowed IPs
-	Assure that the public certificate on AWS is in sshrsa format
+	Assure that the public certificate on AWS is in ssh-rsa format
 
 Use the -v option on ssh to get more detailed troubleshooting information:
 
@@ -78,3 +78,22 @@ Use the -v option on ssh to get more detailed troubleshooting information:
 Use the debug option with Vagrant for more troubleshooting info (this is very verbose)
 
 	VAGRANT_LOG=debug vagrant ssh vagrant_machine_name
+
+
+## Compose file format compatibility matrix
+
+	| Compose file version | Docker Engine |
+	| -------------------- | ------------- |
+	| 3.6                  | 18.02.0+      |
+	| 3.5                  | 17.12.0+      |
+	| 3.4                  | 17.09.0+      |
+	| 3.3                  | 17.06.0+      |
+	| 3.2                  | 17.04.0+      |
+	| 3.1                  | 1.13.1+       |
+	| 3.0                  | 1.13.0+       |
+	| 2.3                  | 17.06.0+      |
+	| 2.2                  | 1.13.0+       |
+	| 2.1                  | 1.12.0+       |
+	| 2.0                  | 1.10.0+       |
+	| 1.0                  | 1.9.1+        |
+
