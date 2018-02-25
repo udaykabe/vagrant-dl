@@ -7,6 +7,3 @@
     - ansible-awscli
     - ansible-docker
     - ansible-docker-compose
-    - ansible-oracle-java8
-    - ansible-confluent-oss
-
