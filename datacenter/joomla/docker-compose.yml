@@ -10,7 +10,9 @@ services:
     #  - 80:80
     environment:
       - JOOMLA_DB_HOST=joomladb
-      - JOOMLA_DB_PASSWORD=${JOOMLA_DB_PASSWORD:-example}
+      - JOOMLA_DB_NAME=${JOOMLA_DB_NAME;-joomla} # this is the default
+      - JOOMLA_DB_USER=${JOOMLA_DB_USER:-root} # this is the default
+      - JOOMLA_DB_PASSWORD=${JOOMLA_DB_PASSWORD:-changeme}
 
       - VIRTUAL_HOST=${JOOMLA_HOST:-joomla.example.com}
       - VIRTUAL_NETWORK=back-tier
@@ -20,14 +22,20 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
     networks:
       - back-tier
-    restart: always
+    restart: on-failure:5
 
   joomladb:
-    image: mysql/mysql-server:5.76
+    image: mysql:5.7
     volumes:
       - joomla_db:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-changeme}
+
+      # optional - for creating a DB user with superuser permissions
+      # for database spec'd by MYSQL_DATABASE
+      #- MYSQL_DATABASE=${JOOMLA_DB_NAME:=joomla}
+      #- MYSQL_USER=${JOOMLA_DB_USER:=root}
+      #- MYSQL_PASSWORD=${JOOMLA_DB_PASSWORD:-changeme}
     networks:
       - back-tier
     restart: always
