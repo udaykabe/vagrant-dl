@@ -1,0 +1,17 @@
+---
+- name: Install Juju
+  command: 'snap install juju --classic'
+
+- name: Update LXD to latest version from xenial-backports
+  apt: name=lxd state=latest default_release=xenial-backports update_cache=yes
+
+- name: Install ZFS
+  apt: name={{ item }} state=present
+  with_items:
+    - zfsutils-linux
+
+- name: Add "{{ansible_ssh_user}}" to LXD group
+  user: name={{ansible_ssh_user}} groups=lxd append=yes
+
+- name: Initialize LXD
+  command: 'lxd init --auto  --storage-backend=zfs  --storage-create-loop=20 --storage-pool=lxd'

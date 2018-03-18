@@ -1,0 +1,7 @@
+---
+- name: Install Juju
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - ansible-juju
