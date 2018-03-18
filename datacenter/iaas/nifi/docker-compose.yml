@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+
+  nifi:
+    image: apache/nifi
+    container_name: nifi
+    environment:
+      - NIFI_WEB_HTTP_HOST=nifi
+      - NIFI_WEB_HTTP_PORT=8080
+
+      - VIRTUAL_HOST=${NIFI_HOST:-nifi.example.com}
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=8080
+
+      - LETSENCRYPT_HOST=${NIFI_HOST:-nifi.example.com}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL:-first.last@example.com}
+    networks:
+      - back-tier
+    restart: always
+
+networks:
+  back-tier:
+    external: true
+
+volumes:
+  nifi_data:
