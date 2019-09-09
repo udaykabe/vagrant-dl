@@ -1,7 +1,8 @@
 # Eclipse
 ############
 .classpath
-.project
+# .project is needed by oomph to properly recognize an Eclipse project
+#.project
 .settings/
 
 # Vagrant
