@@ -134,6 +134,10 @@ Vagrant.configure(2) do |config|
       override.vm.network :private_network, ip: "192.168.33.8"
       #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
+      # Uncomment and edit the following as needed to visit a web page
+      #  exposed at some port (e.g., 2368) of the guest using localhost:9090 on the host
+      #override.vm.network "forwarded_port", guest: 2368, host: 9090
+
       vb.name = File.basename(Dir.getwd) + "-dockerhost"
       vb.memory = vb_config['memory']
       vb.cpus = vb_config['cpus']
@@ -274,7 +278,8 @@ Vagrant.configure(2) do |config|
       # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.100/hour, $0.0268/hour
       # m5.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.096/hour, $0.0163/hour
       # r3.large,   2vcpu, 6.5 ECU, 15GiB, 1 x 32 SSD, $0.166/hour, $0.0206/hour   -- dc/os bootstrap and agent 60GB needed
-      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0186/hour, $0.048/hr - $0.076/hr actual
+      # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0199/hour, $0.048/hr - $0.076/hr actual
+      # r5.large,   2vcpu, 9 ECU, 16GiB, EBS Only, $0.126/hour, $0.0209/hour
 
       ### xLarge ###
       # t2.xlarge,  4vcpu, variable ECU, 16GiB, EBS Only, $0.188/hour
@@ -282,7 +287,8 @@ Vagrant.configure(2) do |config|
       # m5.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.192/hour, $0.0326/hour
       # p2.xlarge,  4vcpu, 12 ECU, 61GiB, EBS Only, $0.9/hour, $0.2915/hour -- machine learning
       # r3.xlarge,  4vcpu, 13 ECU, 30.5GiB, 1 x 80 SSD, $0.333/hour, $0.0354/hour -- mesos master 120GB SSD recommended
-      # r4.xlarge,  4vcpu, 13.5 ECU, 30.5GiB, EBS Only, $0.266/hour, $0.0372/hour
+      # r4.xlarge,  4vcpu, 13.5 ECU, 30.5GiB, EBS Only, $0.266/hour, $0.0398/hour
+      # r5.xlarge,  4vcpu, 19 ECU, 32GiB, EBS Only, $0.252/hour, $0.0418/hour
 
       ### 2xLarge ###
       # t2.2xlarge, 8vcpu, variable ECU, 32GiB, EBS Only, $0.376/hour

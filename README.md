@@ -1,10 +1,61 @@
-This project allows you to explore using docker and docker-compose on the following VMs and cloud providers:
+This project allows you to use Vagrant to create VMs on the following VM/cloud providers:
 
 1. VirtualBox
 2. Azure
 3. Amazon
 
-On Amazon, it is possible to use EC2 spot instances to save on the cost of cloud VMs.  Spot instances could save you more than 50% off the cost of on-demand instances.
+On Amazon, the project allows you to use EC2 spot instances to save on the cost of cloud VMs.  Spot instances could save you more than 50% off the cost of on-demand instances.
+Visit [Amazon EC2 Spot Instances Pricing](https://aws.amazon.com/ec2/spot/pricing/)
+and [Amazon EC2 Pricing](https://aws.amazon.com/ec2/pricing/on-demand/).
+
+Moreover, the project uses Ansible to setup docker and docker-compose on the VM to experiment with containers, and composing containerized applications.
+
+You can first create a VM using Virtualbox so that you can experiment locally, and then provision a similar VM on AWS or Azure for a cloud experience.
+
+# Requirements for running on Virtualbox
+
+When this project was first committed, it ran on Vagrant 1.8.7 and Virtualbox 5.0.36 r114008.  However, as a result of updates to Windows, updates to Virtualbox and Vagrant were apparently necessitated.
+
+As of this edit, the Vagrantfile runs correctly with the following versions of Windows, Virtualbox, and Vagrant:
+
+	Windows 10 Home version 1903
+	Virtualbox version 6.0.12 r133076 (Qt5.6.2)
+	Vagrant version 2.2.6
+
+## Cygwin 64
+
+Install Cygwin 64 for running vagrant commands, and working with Ruby as necessary.
+
+	Ruby on Cygwin 64: ruby 2.6.4p104 (2019-08-28 revision 67798) [x86_64-cygwin]
+
+## Re-installing Vagrant
+
+It is best to uninstall all Vagrant plugins before upgrading Vagrant.  Use the following commands to get a list of plugins:
+
+	vagrant plugin list
+	vagrant plugin unintall <plugin-name>
+
+
+### Install vagrant-aws for spot instances
+
+For creating spot instances, this Vagrantfile requires a specific version of vagrant-aws.  In order to install it,
+visit [vagrant_spot_instance.md](https://gist.github.com/ozzyjohnson/d62b0c8183f0d4d7448e).
+
+First install fog-ovirt as follows:
+
+	vagrant plugin install --plugin-version 1.0.1 fog-ovirt
+
+then install vagrant-aws
+
+### Notes on Vagrant
+
+Vagrant customizes ["base boxes"](https://www.vagrantup.com/docs/boxes/base.html) by using Provisioners such as shell scripts, Ansible playbooks, Puppet manifests, Chef cookbooks and recipes, and Salt states.
+
+Vagrant base boxes are are configured with the default "vagrant" user and the default "vagrant" password, and an insecure keypair for ssh access.  When Vagrant boots up a fresh VM on Virtualbox, the insecure keypair is replaced with a fresh keypair for "improving security".  You can login into the VM using the command:
+
+	vagrant ssh hostname
+
+Password-less sudo is also configured in the base boxes.
 
 
 ## Importing a KeyPair into AWS
