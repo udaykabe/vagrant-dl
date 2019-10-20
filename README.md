@@ -124,7 +124,7 @@ If you are having trouble, ssh'ing into your AWS instance:
 
 Use the -v option on ssh to get more detailed troubleshooting information:
 
-	ssh -v user@host
+	ssh -v user-at-hostname
 
 Use the debug option with Vagrant for more troubleshooting info (this is very verbose)
 
