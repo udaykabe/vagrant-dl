@@ -269,14 +269,18 @@ Vagrant.configure(2) do |config|
   
       override.ssh.private_key_path = File.expand_path('~/.ssh/id_rsa')
       override.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: [".gitignore", ".project"]
-  
+
+      #############################
+      # US East(Ohio) Pricing
+      #############################
+
       # t1.micro,   1vcpu, variable ECU, .615GiB, EBS Only, $0.02/hour, $0.0041/hour
       # t2.micro,   1vcpu, variable ECU, 1GiB, EBS Only, $0.012/hour
 
       ### Large ###
       # t2.large,   2vcpu, variable ECU, 8GiB, EBS Only, $0.094/hour
-      # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.100/hour, $0.0268/hour
-      # m5.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.096/hour, $0.0163/hour
+      # m4.large,   2vcpu, 6.5 ECU, 8GiB, EBS Only, $0.100/hour, $0.019/hour
+      # m5.large,   2vcpu, 8 ECU, 8GiB, EBS Only, $0.096/hour, $0.0202/hour
       # r3.large,   2vcpu, 6.5 ECU, 15GiB, 1 x 32 SSD, $0.166/hour, $0.0206/hour   -- dc/os bootstrap and agent 60GB needed
       # r4.large,   2vcpu, 7 ECU, 15.25GiB, EBS Only, $0.133/hour, $0.0199/hour, $0.048/hr - $0.076/hr actual
       # r5.large,   2vcpu, 9 ECU, 16GiB, EBS Only, $0.126/hour, $0.0209/hour
@@ -284,9 +288,9 @@ Vagrant.configure(2) do |config|
       ### xLarge ###
       # t2.xlarge,  4vcpu, variable ECU, 16GiB, EBS Only, $0.188/hour
       # m4.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.200/hour, $0.0664/hour
-      # m5.xlarge,  4vcpu, 13 ECU, 16GiB, EBS Only, $0.192/hour, $0.0326/hour
+      # m5.xlarge,  4vcpu, 16 ECU, 16GiB, EBS Only, $0.192/hour, $0.041/hour
       # p2.xlarge,  4vcpu, 12 ECU, 61GiB, EBS Only, $0.9/hour, $0.2915/hour -- machine learning
-      # r3.xlarge,  4vcpu, 13 ECU, 30.5GiB, 1 x 80 SSD, $0.333/hour, $0.0354/hour -- mesos master 120GB SSD recommended
+      # r3.xlarge,  4vcpu, 13 ECU, 30.5GiB, 1 x 80 SSD, $0.333/hour, $0.0379/hour -- mesos master 120GB SSD recommended
       # r4.xlarge,  4vcpu, 13.5 ECU, 30.5GiB, EBS Only, $0.266/hour, $0.0398/hour
       # r5.xlarge,  4vcpu, 19 ECU, 32GiB, EBS Only, $0.252/hour, $0.0418/hour
 
