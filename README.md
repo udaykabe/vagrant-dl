@@ -21,6 +21,8 @@ As of this edit, the Vagrantfile runs correctly with the following versions of W
 	Windows 10 Home version 1903
 	Virtualbox version 6.0.12 r133076 (Qt5.6.2)
 	Vagrant version 2.2.6
+	Docker version 17.05.0-ce, build 89658be
+	docker-compose version 1.24.1, build 4667896
 
 ## Cygwin 64
 
@@ -148,3 +150,30 @@ Use the debug option with Vagrant for more troubleshooting info (this is very ve
 	| 2.0                  | 1.10.0+       |
 	| 1.0                  | 1.9.1+        |
 
+# Output From Shell Config
+
+The last piece of bringing an AWS VM is to expand the disk size from 8G to 30G.  You should see the following:
+
+    dockerhost-aws: Running: script: Assign EIP; Resize root volume
+    dockerhost-aws: Executing as: ubuntu
+    dockerhost-aws: Assigning EIP: 10.0.0.0 to instance: i-<<17-digit hex value>>
+    dockerhost-aws: {
+    dockerhost-aws:     "AssociationId": "eipassoc-<<17-digit hex value>>"
+    dockerhost-aws: }
+    dockerhost-aws: Instance ID: i-<<17-digit hex value>>, Volume ID: vol-<<17-digit hex value>>
+    dockerhost-aws: Resizing /dev/sda1
+    dockerhost-aws: {
+    dockerhost-aws:     "VolumeModification": {
+    dockerhost-aws:         "TargetSize": 30,
+    dockerhost-aws:         "TargetVolumeType": "gp2",
+    dockerhost-aws:         "ModificationState": "modifying",
+    dockerhost-aws:         "VolumeId": "vol-<<17-digit hex value>>",
+    dockerhost-aws:         "TargetIops": 100,
+    dockerhost-aws:         "StartTime": "2019-10-20T20:36:06.000Z",
+    dockerhost-aws:         "Progress": 0,
+    dockerhost-aws:         "OriginalVolumeType": "gp2",
+    dockerhost-aws:         "OriginalIops": 100,
+    dockerhost-aws:         "OriginalSize": 8
+    dockerhost-aws:     }
+    dockerhost-aws: }
+    dockerhost-aws: Rebooting...
