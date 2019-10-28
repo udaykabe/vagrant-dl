@@ -90,6 +90,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: ../../../config/nginx/vhost.d
+      # Relative paths no longer allowed
+      device: ${PWD}/../../../config/nginx/vhost.d
       o: bind
   
