@@ -62,6 +62,8 @@ end
 # Important!!! Be sure to:
 # Manually install vagrant-aws from nabeken for spot instances
 # See this gist: https://gist.github.com/ozzyjohnson/d62b0c8183f0d4d7448e
+# TODO: Switch to the following, more updated version:
+#   https://github.com/bdwyertech/vagrant-aws/blob/bdwyertech/lib/vagrant-aws/action/connect_aws.rb
 # The following will install the standard AWS plugin if you do not use spot instances
 required_plugins = %w(vagrant-winnfsd vagrant-azure vagrant-aws)
 
@@ -105,7 +107,7 @@ Vagrant.configure(2) do |config|
       vb.cpus = vb_config['cpus']
       vb.linked_clone = true
     end #configure.vm.provider virtualbox
-  end #configure.vm.define dockerhost-local
+  end #configure.vm.define "trusty"
 
   # Virtualbox Pristine - Xenial
   config.vm.define "xenial", autostart: false do |dockerhost|
@@ -122,7 +124,7 @@ Vagrant.configure(2) do |config|
       vb.cpus = vb_config['cpus']
       vb.linked_clone = true
     end #configure.vm.provider virtualbox
-  end #configure.vm.define dockerhost-local
+  end #configure.vm.define xenial
 
   # Virtualbox Custom Config (check message: apt-get update or try with --fix-missing?)
   config.vm.define "dockerhost", primary: true do |dockerhost|
