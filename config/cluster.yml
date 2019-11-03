@@ -10,21 +10,25 @@ machines:
     count: 1
     region: "us-east-1"
     # Ubuntu AMIs -- https://cloud-images.ubuntu.com/locator/ec2/
-    # us-east-1, zesty, 17.04, amd64, hvm:instance-store,  2017-12-08,  ami-97c5b0ed,  hvm
-    # us-east-1, xenial,  16.04 LTS, amd64, hvm:ebs-ssd, 2018-01-26,  ami-66506c1c,  hvm
+    # us-east-1, zesty, 17.04, amd64, hvm:instance-store, 2017-12-08, ami-97c5b0ed,  hvm
+    # us-east-1, xenial, 16.04 LTS, amd64, hvm:ebs-ssd, 2018-01-26, ami-66506c1c,  hvm
+    # us-east-1, xenial, 16.04 LTS, amd64, hvm:ebs-ssd, 2019-10-21, ami-092546daafcc8bc0d,  hvm
+    # us-east-1, bionic, 18.04 LTS, amd64, hvm:ebs-ssd, 20191021, ami-0d5ae5525eb033d0a, hvm, ENA
     # following ami not supported for r4.large, m5.large, r4.xlarge
     # us-east-1 xenial  16.04 LTS amd64 hvm:instance-store  20180126  ami-c1477bbb  hvm
     # us-east-1 trusty  14.04 LTS amd64 hvm:ebs 20180201  ami-4d202037  hvm
     # us-east-1 trusty  14.04 LTS amd64 hvm:ebs-io1 20180201  ami-e8242492  hvm
     # us-east-1 trusty  14.04 LTS amd64 hvm:ebs-ssd 20180201  ami-a22323d8  hvm
     # us-east-1 trusty  14.04 LTS amd64 hvm:instance-store  20180201  ami-1b070761  hvm
+
+    # The following AMI cannot be used on r5.large since r5.large requires an ENA (Elastic Network Adapter)
     ami: "ami-f4cc1de2"
     user: "ubuntu"
     security_groups: "sg-xxxyyyzz"
     keypair_name: "my_key_pair"
     volume_size: 30
     instance_type: r4.large
-    spot_price: "0.15"
+    spot_price: "0.10"
     subnet_id: "subnet-xxxyyyzz"
     eip: "10.0.0.0"
     eip_allocation_id: "eipalloc-xxxyyyzz"
