@@ -19,14 +19,14 @@ dockerhost-azure
 xenial
 trusty
 
-[vb-dockernode]
+[vb_dockernode]
 dockerhost
 
-[aws-dockernode]
+[aws_dockernode]
 dockerhost-aws
 
-[aws-ai]
+[aws_ai]
 dockerhost-aws
 
-[vb-ai]
+[vb_ai]
 dockerhost
