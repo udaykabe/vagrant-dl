@@ -1,0 +1,22 @@
+version: '3.1'
+
+# Employee Rostering Application
+# visit: https://github.com/bibryam/rotabuilder
+services:
+  rotabuilder:
+    image: bibryam/rotabuilder
+    # if running on a local vm
+    #ports:
+    #  - 80:8080
+    environment:
+      - VIRTUAL_HOST=${ROTABUILDER_HOST:-rota.example.com}
+      - VIRTUAL_NETWORK=back-tier
+      - VIRTUAL_PORT=8080
+    networks:
+      - back-tier
+    restart: on-failure:5
+
+networks:
+  back-tier:
+    external: true
+      
