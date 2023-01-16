@@ -12,7 +12,7 @@ Moreover, the project uses Ansible to setup docker and docker-compose on the VM 
 
 You can first create a VM using Virtualbox so that you can experiment locally, and then provision a similar VM on AWS or Azure for a cloud experience.
 
-# Requirements for running on Virtualbox
+# Running Vagrant on Windows
 
 When this project was first committed, it ran on Vagrant 1.8.7 and Virtualbox 5.0.36 r114008.  However, as a result of updates to Windows, updates to Virtualbox and Vagrant were apparently necessitated.
 
@@ -29,6 +29,16 @@ As of this edit, the Vagrantfile runs correctly with the following versions of W
 Install Cygwin 64 for running vagrant commands, and working with Ruby as necessary.
 
 	Ruby on Cygwin 64: ruby 2.6.4p104 (2019-08-28 revision 67798) [x86_64-cygwin]
+
+# Running Vagrant on Intel MacOS (1/15/2023)
+
+As of this edit, the Vagrantfile runs correctly with the following versions of MacOS, Virtualbox, and Vagrant:
+
+	MacOS Catalina 10.15.7
+	Virtualbox version 6.1.30 r148432 (Qt5.6.3)
+	Vagrant version 2.3.4
+	Docker version 20.10.22, build 3a2c30b
+	Docker Compose version v2.15.1
 
 ## Re-installing Vagrant
 
@@ -133,10 +143,25 @@ Use the debug option with Vagrant for more troubleshooting info (this is very ve
 	VAGRANT_LOG=debug vagrant ssh vagrant_machine_name
 
 
-## Compose file format compatibility matrix
+## Docker Compose and Docker Desktop (added 1/15/2023)
+
+Docker compose has become a two-headed beast:
+
+	1. old style 'docker-compose' command - on Linux, this is available by installing Docker and Docker Compose separately
+	2. new style 'docker compose' command - on Linux, Mac and Windows, this is available as a part of Docker Desktop
+
+On a Linux machine, Docker Desktop installs itself in its own Linux VM; nested Linux VM environments are not supported.  Therefore, a Linux VM on AWS cannot support the installation of Docker Desktop so the old style docker-compose is the only option.
+
+[Why does Docker Desktop for Linux run a VM?](https://docs.docker.com/desktop/faqs/linuxfaqs/#why-does-docker-desktop-for-linux-run-a-vm)
+
+
+### Compose file format compatibility matrix
 
 	| Compose file version | Docker Engine |
 	| -------------------- | ------------- |
+	| Compose Spec         | 19.03.0+      |
+	| 3.8                  | 19.03.0+      |
+	| 3.7                  | 18.06.0+      |
 	| 3.6                  | 18.02.0+      |
 	| 3.5                  | 17.12.0+      |
 	| 3.4                  | 17.09.0+      |
@@ -152,7 +177,7 @@ Use the debug option with Vagrant for more troubleshooting info (this is very ve
 
 # Output From Shell Config
 
-The last piece of bringing an AWS VM is to expand the disk size from 8G to 30G.  You should see the following:
+The last piece of bringing up an AWS VM is to expand the disk size from 8G to 30G.  You should see the following:
 
     dockerhost-aws: Running: script: Assign EIP; Resize root volume
     dockerhost-aws: Executing as: ubuntu

@@ -36,14 +36,22 @@
   apt: pkg=linux-image-extra-{{ansible_kernel}} state=present
   when: ansible_lsb.codename == "trusty"
 
+- name: Install aptitude using apt
+  apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+- name: Install required system packages for Docker
+  apt: name={{ docker_required_packages }} state=latest update_cache=yes
+
 - name: Import Docker GPG key
-  apt_key: id={{docker_repo_key}} keyserver=p80.pool.sks-keyservers.net state=present
+  apt_key:
+    url: "{{ docker_gpg_url }}"
+    state: present
 
 - name: Add docker repo
-  apt_repository: repo='deb {{docker_repo}} {{ansible_lsb.id|lower}}-{{ansible_lsb.codename}} main' state=present
+  apt_repository: repo='deb {{docker_repo}} bionic stable' state=present
 
-- name: Install 'docker-engine'
-  apt: pkg={{docker_apt_package}} state=present update_cache=yes
+- name: Install Docker
+  apt: name={{ docker_packages }} state=latest update_cache=yes
 
 - name: Add user to docker group
   user: name={{ansible_ssh_user}} groups=docker append=yes

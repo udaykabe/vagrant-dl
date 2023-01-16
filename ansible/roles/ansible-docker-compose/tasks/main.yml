@@ -4,11 +4,14 @@
 # docker-compose installation tasks
 - include: "{{ ansible_os_family }}Tasks.yml"
 
-- name: Install 'docker-compose'
-  command: 'pip install docker-compose'
+- name: Install Docker Compose
+  get_url:
+    url: "{{ docker_compose_url }}"
+    dest: /usr/local/bin/docker-compose
+    mode: u+x,g+x,o+x
 
 - name: Determine docker-compose version
-  shell: docker-compose --version | awk '{match($3,/[0-9]+\.[0-9]+\.[0-9]+/,a1); print a1[0]}'
+  shell: docker-compose version --short
   register: compose_version
 
 - name: "Install bash completion for docker-compose version: {{compose_version.stdout}}"
@@ -16,3 +19,4 @@
     url=https://raw.githubusercontent.com/docker/compose/{{compose_version.stdout}}/contrib/completion/bash/docker-compose
     dest=/etc/bash_completion.d/docker-compose
     mode=0644
+  ignore_errors: true

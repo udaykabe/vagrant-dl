@@ -1,6 +1,23 @@
+---
 # Debian Vars
 
-docker_apt_package: "docker-engine{{ '=' + docker_version if docker_version else '' }}"
+admin_user: dev
 
-docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"
-docker_repo: "https://apt.dockerproject.org/repo"
+docker_required_packages:
+  - "apt-transport-https"
+  - "ca-certificates"
+  - "curl"
+  - "gnupg-agent"
+  - "software-properties-common"
+  - "python3-pip"
+  - "virtualenv"
+  - "python3-setuptools"
+
+docker_gpg_url: "https://download.docker.com/linux/ubuntu/gpg"
+
+docker_repo: "https://download.docker.com/linux/ubuntu"
+
+docker_packages:
+  - "docker-ce"
+  - "docker-ce-cli"
+  - "containerd.io"

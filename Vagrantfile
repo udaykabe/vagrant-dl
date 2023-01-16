@@ -65,7 +65,11 @@ end
 # TODO: Switch to the following, more updated version:
 #   https://github.com/bdwyertech/vagrant-aws/blob/bdwyertech/lib/vagrant-aws/action/connect_aws.rb
 # The following will install the standard AWS plugin if you do not use spot instances
-required_plugins = %w(vagrant-winnfsd vagrant-azure vagrant-aws)
+required_plugins = %w(vagrant-azure vagrant-aws)
+
+if OS.windows?
+  required_plugins.push("vagrant-winnfsd")
+end
 
 required_plugins.each do |plugin|
   need_restart = false
@@ -131,9 +135,23 @@ Vagrant.configure(2) do |config|
     dockerhost.vm.hostname = "dockerhost.local"  # set hostname in /etc/hosts
 
     dockerhost.vm.provider "virtualbox" do |vb, override|
-      override.vm.box = "bento/ubuntu-16.04"
-      override.ssh.username = "vagrant" # this is the default for ubuntu/xenial64
-      override.vm.network :private_network, ip: "192.168.33.8"
+      override.vm.box = "bento/ubuntu-18.04"
+      override.ssh.username = "vagrant" # this is the default for bento/ubuntu-18.04
+
+      # This IP address change is needed on Linux and MacOS per the following error message:
+      # The IP address configured for the host-only network is not within the
+      # allowed ranges. Please update the address used to be within the allowed
+      # ranges and run the command again.
+
+      #   Address: 192.168.33.8
+      #   Ranges: 192.168.56.0/21
+
+      # Valid ranges can be modified in the /etc/vbox/networks.conf file. For
+      # more information including valid format see:
+
+      #   https://www.virtualbox.org/manual/ch06.html#network_hostonly
+      override.vm.network :private_network, ip: "192.168.56.8"
+
       #override.vm.synced_folder Dir.getwd, "/vagrant", nfs: true
 
       # Uncomment and edit the following as needed to visit a web page
