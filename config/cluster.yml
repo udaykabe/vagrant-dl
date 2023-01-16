@@ -9,17 +9,18 @@ machines:
   aws:
     count: 1
     region: "us-east-1"
+    #--------------------------------------------------------------
     # Ubuntu AMIs -- https://cloud-images.ubuntu.com/locator/ec2/
-    # us-east-1, zesty, 17.04, amd64, hvm:instance-store, 2017-12-08, ami-97c5b0ed,  hvm
-    # us-east-1, xenial, 16.04 LTS, amd64, hvm:ebs-ssd, 2018-01-26, ami-66506c1c,  hvm
-    # us-east-1, xenial, 16.04 LTS, amd64, hvm:ebs-ssd, 2019-10-21, ami-092546daafcc8bc0d,  hvm
-    # us-east-1, bionic, 18.04 LTS, amd64, hvm:ebs-ssd, 20191021, ami-0d5ae5525eb033d0a, hvm, ENA
+    #--------------------------------------------------------------
+    # us-east-1, bionic, 18.04 LTS, amd64, hvm:ebs-ssd, 20221201, ami-061dbd1209944525c, hvm, ENA
+    # us-east-1, xenial, 16.04 LTS, amd64, hvm:ebs-ssd, 20210928, ami-0b0ea68c435eb488d, hvm, ENA
+    # us-east-1, trusty, 14.04 LTS, amd64, hvm:ebs-ssd, 20191107, ami-000b3a073fc20e415, hvm, ENA
+    # us-east-1, trusty, 14.04 LTS, amd64, hvm:ebs-io1, 20191107, ami-06b9259c69d8ed7f3, hvm, ENA
+    # us-east-1, trusty, 14.04 LTS, amd64, hvm:ebs,     20191107, ami-07957d39ebba800d5, hvm, ENA
+
     # following ami not supported for r4.large, m5.large, r4.xlarge
-    # us-east-1 xenial  16.04 LTS amd64 hvm:instance-store  20180126  ami-c1477bbb  hvm
-    # us-east-1 trusty  14.04 LTS amd64 hvm:ebs 20180201  ami-4d202037  hvm
-    # us-east-1 trusty  14.04 LTS amd64 hvm:ebs-io1 20180201  ami-e8242492  hvm
-    # us-east-1 trusty  14.04 LTS amd64 hvm:ebs-ssd 20180201  ami-a22323d8  hvm
-    # us-east-1 trusty  14.04 LTS amd64 hvm:instance-store  20180201  ami-1b070761  hvm
+    # us-east-1 xenial  16.04 LTS amd64 hvm:instance-store  20210928  ami-0059b7cd9f67d8050  hvm ENA
+    # us-east-1 trusty  14.04 LTS amd64 hvm:instance-store  20191107  ami-0d65710e46db3c637  hvm ENA
 
     # The following AMI cannot be used on r5.large since r5.large requires an ENA (Elastic Network Adapter)
     ami: "ami-f4cc1de2"
